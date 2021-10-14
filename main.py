@@ -39,7 +39,6 @@ async def refresh():
 
 @client.event
 async def on_ready():
-    print("Logged in as {}".format(client.user))
     channel = client.get_channel(854856660932624434)
     await channel.send("Process initiated.")
     while True:
