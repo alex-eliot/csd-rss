@@ -5,14 +5,17 @@ import io
 import os
 import json
 import base64
-import requests
+from github import Github
+from github.InputGitTreeElement import InputGitTreeElement
+from github.Repository import Repository
 
 import csd_rss
+from github_operations import updateHistory, get_repo
 
 bot_owner = 242634160026550274
 client = discord.Client()
 
-async def refresh():
+async def refresh() -> None:
     default_csd, new_csd = await csd_rss.get_new_announcements(key)
     if new_csd:
         for entry in new_csd:
@@ -34,9 +37,9 @@ async def refresh():
                 }
             }
 
-        channel = client.get_channel(898302925808492584)
+        channel = client.get_channel(854856660932624434)
         await channel.send(content="Test <@&731583520711114805>", embed=discord.Embed.from_dict(embed_dict))
-
+        updateHistory(get_repo(), "csd_rss.json", default_csd)
 
 @client.event
 async def on_ready():
@@ -46,17 +49,15 @@ async def on_ready():
         await refresh()
         await asyncio.sleep((1 * 60) * 5) # 5 minutes
 
-@client.event
-async def on_message(message):
-    if message.content.startswith("-"):
-        refresh()
-
-with io.open("token.json", mode="r", encoding="utf-8") as f:
+with io.open("tokens.json", mode="r", encoding="utf-8") as f:
     global key
     key = os.getenv("key")
     if not key:
         key = input("Input key: ")
-    token_encoded = json.load(f)["token"]
-    token_decoded = "".join(tuple([chr(ord(token_encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(token_encoded))]))
-    
-    client.run(base64.b64decode(token_decoded).decode("utf-8"))
+
+    tokens = json.load(f)
+
+    discord_token_encoded = tokens["discord_token"]
+    discord_token_decoded = "".join(tuple([chr(ord(discord_token_encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(discord_token_encoded))]))
+
+    client.run(base64.b64decode(discord_token_decoded).decode("utf-8"))

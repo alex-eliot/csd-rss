@@ -2,10 +2,12 @@ import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
 import io
+import os
 import html
 import re
 import json
-from datetime import datetime
+
+from github_operations import updateHistory, get_repo
 
 global url
 global headers
@@ -22,10 +24,8 @@ async def initial_setup(key):
                 html_content = await resp.read()
                 rss = parse(html_content)
 
-                with io.open("csd_rss.json", mode="w", encoding="utf-8") as f:
-                    decoded = json.dumps(rss, indent=2)
-                    encoded = "".join(tuple([chr(ord(decoded[i]) ^ ord(key[i % len(key)])) for i in range(len(decoded))]))
-                    f.write(encoded)
+                updateHistory(get_repo(), "csd_rss.json", rss)
+
 
 async def get_new_announcements(key):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
@@ -36,9 +36,7 @@ async def get_new_announcements(key):
 
                 try:
                     with io.open("csd_rss.json", mode="r", encoding="utf-8") as f:
-                        encoded = f.read()
-                        decoded = "".join(tuple([chr(ord(encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(encoded))]))
-                        rss_saved = json.loads(decoded)
+                        rss_saved = json.load(f)
 
                 except FileNotFoundError:
                     await initial_setup(key)
@@ -57,10 +55,7 @@ async def get_new_announcements(key):
                         new.append(item)
                         rss_saved["feed"].append(item)
 
-                with io.open("csd_rss.json", mode="w", encoding="utf-8") as f:
-                    decoded = json.dumps(rss_saved, indent=2)
-                    encoded = "".join(tuple([chr(ord(decoded[i]) ^ ord(key[i % len(key)])) for i in range(len(decoded))]))
-                    f.write(encoded)
+                updateHistory(get_repo(), "csd_rss.json", rss_saved)
 
     return rss_saved, new
 
@@ -136,7 +131,6 @@ def parse(inpt):
     }
 
     return announcements
-
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
