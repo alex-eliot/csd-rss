@@ -2,6 +2,8 @@ import discord
 import asyncio
 from datetime import datetime
 import urllib.parse
+import io
+import json
 
 import csd_rss
 
@@ -35,5 +37,7 @@ async def on_ready():
         await refresh()
         await asyncio.sleep((1 * 60) * 5) # 5 minutes
 
-
-client.run("ODk4MjIyNzE2OTQ2MTE2Njcw.YWhFFw.ID83M_Eiq2rhv-x9PROTZAbuUss")
+with io.open("settings.json", mode="r", encoding="utf-8") as f:
+    settings = json.load(f)
+    
+    client.run(settings["token"])
