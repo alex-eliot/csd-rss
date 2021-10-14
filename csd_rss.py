@@ -34,6 +34,12 @@ async def get_new_announcements():
 
                 with io.open("csd_rss.json", mode="r", encoding="utf-8") as f:
                     rss_saved = json.load(f)
+
+                rss_saved["title"] = rss["title"]
+                rss_saved["link"] = rss["link"]
+                rss_saved["lastUpdate"] = rss["lastUpdate"]
+                rss_saved["favicon"] = rss["favicon"]
+                rss_saved["feed"] = []
                     
                 new = []
 
@@ -41,11 +47,6 @@ async def get_new_announcements():
                     if item not in rss_saved["feed"]:
                         new.append(item)
                         rss_saved["feed"].append(item)
-
-                rss_saved["title"] = rss["title"]
-                rss_saved["main_url"] = rss["main_url"]
-                rss_saved["lastUpdate"] = rss["lastUpdate"]
-                rss_saved["favicon"] = rss["favicon"]
 
                 with io.open("csd_rss.json", mode="w", encoding="utf-8") as f:
                     json.dump(rss_saved, f, indent=2)
@@ -117,7 +118,7 @@ def parse(inpt):
 
     announcements = {
         "title": title,
-        "main_url": main_url,
+        "link": main_url,
         "lastUpdate": lastUpdate,
         "favicon": favicon,
         "feed": feed

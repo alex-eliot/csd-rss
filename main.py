@@ -11,7 +11,7 @@ bot_owner = 242634160026550274
 client = discord.Client()
 
 async def refresh():
-    default_csd, new_csd = csd_rss.get_new_announcements()
+    default_csd, new_csd = await csd_rss.get_new_announcements()
     if new_csd:
         for entry in new_csd:
             embed_dict = {
@@ -26,8 +26,14 @@ async def refresh():
                 "footer": {
                     "text": "Δημοσιεύτηκε"
                 },
-                "timestamp": datetime.fromisoformat(new_csd["pubDate"])
+                "timestamp": entry["pubDate"],
+                "thumbnail": {
+                    "url": default_csd["favicon"]
+                }
             }
+
+        channel = client.get_channel(854856660932624434)
+        await channel.send(content="Test", embed=discord.Embed.from_dict(embed_dict))
 
 
 @client.event
