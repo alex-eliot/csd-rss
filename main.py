@@ -48,7 +48,7 @@ async def on_ready():
 
 with io.open("token.json", mode="r", encoding="utf-8") as f:
     global key
-    key = os.getenv("token")
+    key = os.getenv("key")
     if not key:
         key = input("Input key: ")
     token_encoded = json.load(f)["token"]
