@@ -3,6 +3,7 @@ import asyncio
 import urllib.parse
 import io
 import json
+import base64
 
 import csd_rss
 
@@ -42,7 +43,9 @@ async def on_ready():
         await refresh()
         await asyncio.sleep((1 * 60) * 5) # 5 minutes
 
-with io.open("settings.json", mode="r", encoding="utf-8") as f:
-    settings = json.load(f)
+with io.open("token.json", mode="r", encoding="utf-8") as f:
+    key = input("Input decoding key: ")
+    token_encoded = json.load(f)["token"]
+    token_decoded = "".join(tuple([chr(ord(token_encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(token_encoded))]))
     
-    client.run(settings["token"])
+    client.run(base64.b64decode(token_decoded).decode("utf-8"))
