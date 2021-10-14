@@ -34,8 +34,8 @@ async def refresh():
                 }
             }
 
-        channel = client.get_channel(854856660932624434)
-        await channel.send(content="Test", embed=discord.Embed.from_dict(embed_dict))
+        channel = client.get_channel(898302925808492584)
+        await channel.send(content="Test <@731583520711114805>", embed=discord.Embed.from_dict(embed_dict))
 
 
 @client.event
