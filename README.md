@@ -2,4 +2,5 @@
 ```json
 {
     "token": "DISCORD_TOKEN"
-}```
+}
+```
