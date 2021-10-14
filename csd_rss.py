@@ -1,11 +1,10 @@
 import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
-import io
-import os
 import html
 import re
 import json
+import requests
 
 from github_operations import updateHistory, get_repo
 
@@ -17,30 +16,30 @@ headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36 Edg/94.0.992.47"
 }
 
-async def initial_setup(key):
+async def initial_setup(key: str) -> None:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+        async with session.get(url, headers=headers) as resp:
+            if resp.status == 200:
+                html_content = await resp.read()
+                rss = parse(html_content)
+                print("here")
+                updateHistory(get_repo(key), "csd_rss.json", rss)
+
+
+async def get_new_announcements(key: str) -> tuple:
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         async with session.get(url, headers=headers) as resp:
             if resp.status == 200:
                 html_content = await resp.read()
                 rss = parse(html_content)
 
-                updateHistory(get_repo(), "csd_rss.json", rss)
+                rss_saved = requests.get("https://github.com/alex-eliot/csd-rss/raw/master/csd_rss.json")
 
-
-async def get_new_announcements(key):
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        async with session.get(url, headers=headers) as resp:
-            if resp.status == 200:
-                html_content = await resp.read()
-                rss = parse(html_content)
-
-                try:
-                    with io.open("csd_rss.json", mode="r", encoding="utf-8") as f:
-                        rss_saved = json.load(f)
-
-                except FileNotFoundError:
+                if rss_saved.status_code != 200:
                     await initial_setup(key)
                     return await get_new_announcements(key)
+                
+                rss_saved = json.loads(rss_saved.text)
 
                 rss_saved["title"] = rss["title"]
                 rss_saved["link"] = rss["link"]
@@ -55,11 +54,11 @@ async def get_new_announcements(key):
                         new.append(item)
                         rss_saved["feed"].append(item)
 
-                updateHistory(get_repo(), "csd_rss.json", rss_saved)
+                updateHistory(get_repo(key), "csd_rss.json", rss_saved)
 
     return rss_saved, new
 
-def parseDate(inpt):
+def parseDate(inpt: str) -> str:
     inpt = inpt.split(", ")[1]
     slices = inpt.split(" ")
 
@@ -88,7 +87,7 @@ def parseDate(inpt):
 
     return "{}-{}-{}T{}".format(time_dict["YYYY"], time_dict["Mon"], time_dict["DD"], time_dict["TT:TT:TT"])
 
-def parse(inpt):
+def parse(inpt: str) -> dict:
     soup = BeautifulSoup(inpt, "html.parser")
 
     channel = soup.rss.channel

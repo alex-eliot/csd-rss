@@ -23,10 +23,11 @@ def updateHistory(repo: Repository, name: str, contents: dict) -> None:
     
     return None
 
-def get_repo():
-    key = os.getend("key")
+def get_repo(key: str or None = None) -> Repository:
     if not key:
-        key = input("Input key: ")
+        key = os.getenv("key")
+        if not key:
+            key = input("Input key: ")
 
     with io.open("tokens.json", mode="r", encoding="utf-8") as f:
         tokens = json.load(f)
