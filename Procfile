@@ -1,1 +1,1 @@
-web: heroku/python main.py
+worker: heroku/python main.py
