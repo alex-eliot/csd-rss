@@ -52,7 +52,7 @@ async def on_message(message):
 
 with io.open("token.json", mode="r", encoding="utf-8") as f:
     global key
-    key = requests.get("https://pastebin.com/raw/86EckRie").content
+    key = requests.get("https://pastebin.com/raw/86EckRie").text
     token_encoded = json.load(f)["token"]
     token_decoded = "".join(tuple([chr(ord(token_encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(token_encoded))]))
     
