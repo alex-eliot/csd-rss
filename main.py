@@ -1,6 +1,5 @@
 import discord
 import asyncio
-from datetime import datetime
 import urllib.parse
 import io
 import json
