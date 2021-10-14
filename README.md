@@ -1,4 +1,5 @@
 # Make settings.json file to run
-`{
-    "token": {discord_token_here}
-}`
+```json
+{
+    "token": "DISCORD_TOKEN"
+}```
