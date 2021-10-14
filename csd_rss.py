@@ -32,8 +32,12 @@ async def get_new_announcements():
                 html_content = await resp.read()
                 rss = parse(html_content)
 
-                with io.open("csd_rss.json", mode="r", encoding="utf-8") as f:
-                    rss_saved = json.load(f)
+                try:
+                    with io.open("csd_rss.json", mode="r", encoding="utf-8") as f:
+                        rss_saved = json.load(f)
+                except FileNotFoundError:
+                    await initial_setup()
+                    return await get_new_announcements()
 
                 rss_saved["title"] = rss["title"]
                 rss_saved["link"] = rss["link"]
