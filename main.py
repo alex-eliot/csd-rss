@@ -43,6 +43,10 @@ async def on_ready():
         await refresh()
         await asyncio.sleep((1 * 60) * 5) # 5 minutes
 
+@client.event
+async def on_message(message):
+    await message.channel.send("Response.")
+
 with io.open("token.json", mode="r", encoding="utf-8") as f:
     global key
     key = input("Input decoding key: ")
