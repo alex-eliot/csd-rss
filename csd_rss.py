@@ -15,7 +15,7 @@ headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36 Edg/94.0.992.47"
 }
 
-async def initial_setup():
+async def initial_setup(key):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         async with session.get(url, headers=headers) as resp:
             if resp.status == 200:
@@ -23,9 +23,11 @@ async def initial_setup():
                 rss = parse(html_content)
 
                 with io.open("csd_rss.json", mode="w", encoding="utf-8") as f:
-                    json.dump(rss, f, indent=2)
+                    decoded = json.dumps(rss, indent=2)
+                    encoded = "".join(tuple([chr(ord(decoded[i]) ^ ord(key[i % len(key)])) for i in range(len(decoded))]))
+                    f.write(encoded)
 
-async def get_new_announcements():
+async def get_new_announcements(key):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         async with session.get(url, headers=headers) as resp:
             if resp.status == 200:
@@ -34,10 +36,13 @@ async def get_new_announcements():
 
                 try:
                     with io.open("csd_rss.json", mode="r", encoding="utf-8") as f:
-                        rss_saved = json.load(f)
+                        encoded = f.read()
+                        decoded = "".join(tuple([chr(ord(encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(encoded))]))
+                        rss_saved = json.loads(decoded)
+
                 except FileNotFoundError:
-                    await initial_setup()
-                    return await get_new_announcements()
+                    await initial_setup(key)
+                    return await get_new_announcements(key)
 
                 rss_saved["title"] = rss["title"]
                 rss_saved["link"] = rss["link"]
@@ -53,7 +58,9 @@ async def get_new_announcements():
                         rss_saved["feed"].append(item)
 
                 with io.open("csd_rss.json", mode="w", encoding="utf-8") as f:
-                    json.dump(rss_saved, f, indent=2)
+                    decoded = json.dumps(rss_saved, indent=2)
+                    encoded = "".join(tuple([chr(ord(decoded[i]) ^ ord(key[i % len(key)])) for i in range(len(decoded))]))
+                    f.write(encoded)
 
     return rss_saved, new
 
@@ -133,5 +140,5 @@ def parse(inpt):
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    a = loop.run_until_complete(initial_setup())
+    a = loop.run_until_complete(initial_setup(input("Input decoding key: ")))
     print(a)

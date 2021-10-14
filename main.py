@@ -11,7 +11,7 @@ bot_owner = 242634160026550274
 client = discord.Client()
 
 async def refresh():
-    default_csd, new_csd = await csd_rss.get_new_announcements()
+    default_csd, new_csd = await csd_rss.get_new_announcements(key)
     if new_csd:
         for entry in new_csd:
             embed_dict = {
@@ -44,6 +44,7 @@ async def on_ready():
         await asyncio.sleep((1 * 60) * 5) # 5 minutes
 
 with io.open("token.json", mode="r", encoding="utf-8") as f:
+    global key
     key = input("Input decoding key: ")
     token_encoded = json.load(f)["token"]
     token_decoded = "".join(tuple([chr(ord(token_encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(token_encoded))]))
