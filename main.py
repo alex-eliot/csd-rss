@@ -46,6 +46,11 @@ async def on_ready():
         await refresh()
         await asyncio.sleep((1 * 60) * 5) # 5 minutes
 
+@client.event
+async def on_message(message):
+    if message.content.startswith("-"):
+        refresh()
+
 with io.open("token.json", mode="r", encoding="utf-8") as f:
     global key
     key = os.getenv("key")
