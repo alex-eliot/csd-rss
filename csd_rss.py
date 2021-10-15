@@ -45,7 +45,7 @@ async def get_new_announcements(key: str) -> tuple:
                 rss_saved["link"] = rss["link"]
                 rss_saved["lastUpdate"] = rss["lastUpdate"]
                 rss_saved["favicon"] = rss["favicon"]
-                rss_saved["feed"] = []
+                rss_saved["feed"] = rss["feed"] if "feed" in rss.keys() else []
                     
                 new = []
 

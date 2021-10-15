@@ -34,9 +34,9 @@ async def refresh() -> None:
                 }
             }
 
-        channel = client.get_channel(854856660932624434)
-        await channel.send(content="<@&731583520711114805>", embed=discord.Embed.from_dict(embed_dict))
-        updateHistory(get_repo(key), "csd_rss.json", default_csd)
+            channel = client.get_channel(854856660932624434)
+            await channel.send(embed=discord.Embed.from_dict(embed_dict))
+            updateHistory(get_repo(key), "csd_rss.json", default_csd)
 
 @client.event
 async def on_ready() -> None:
@@ -45,6 +45,12 @@ async def on_ready() -> None:
     while True:
         await refresh()
         await asyncio.sleep((1 * 60) * 5) # 5 minutes
+
+@client.event
+async def on_message(message) -> None:
+    if message.content.startswith("="):
+        if message.content == "=ping":
+            await message.channel.send("Ping back.")
 
 def start():
     with io.open("tokens.json", mode="r", encoding="utf-8") as f:
