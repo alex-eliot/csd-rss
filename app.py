@@ -4,15 +4,15 @@ import bot
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def index():
     return "<p>sup</p>"
 
-@app.route("/ping")
+@app.route("/ping", methods=["GET"])
 def ping():
     return ""
 
-@app.route("/start")
+@app.route("/start", methods=["GET"])
 def start():
     t1 = threading.Thread(target=bot.start())
     t1.start()
