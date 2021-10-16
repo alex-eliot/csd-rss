@@ -40,9 +40,8 @@ async def refresh() -> None:
 async def on_ready() -> None:
     channel = client.get_channel(854856660932624434)
     await channel.send("Process initiated.")
-    while True:
-        await refresh()
-        await asyncio.sleep((1 * 60) * 5) # 5 minutes
+    await refresh()
+    exit()
 
 @client.event
 async def on_message(message) -> None:
