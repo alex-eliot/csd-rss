@@ -18,23 +18,21 @@ async def refresh() -> None:
         for entry in new_csd:
             embed_dict = {
                 "title": entry["title"],
-                "description": entry["description"],
                 "url": urllib.parse.unquote(entry["link"]),
                 "color": 1484460,
                 "author": {
-                    "name": default_csd["title"],
-                    "url": urllib.parse.unquote(default_csd["link"])
+                    "name": "Ανακοινώσεις – Τμήμα Πληροφορικής ΑΠΘ",
+                    "url": "https://www.csd.auth.gr/announcements/"
                 },
                 "footer": {
-                    "text": "Δημοσιεύτηκε από {}".format(entry["creator"])
+                    "text": "Δημοσιεύτηκε στις {}".format(entry["pubDate"])
                 },
-                "timestamp": entry["pubDate"],
                 "thumbnail": {
-                    "url": default_csd["favicon"]
+                    "url": "https://www.csd.auth.gr/wp-content/uploads/2020/06/csd-favicon-150x150.png"
                 }
             }
 
-            channel = client.get_channel(854856660932624434)
+            channel = client.get_channel(898302925808492584)
             await channel.send(embed=discord.Embed.from_dict(embed_dict))
             updateHistory(get_repo(key), "csd_rss.json", default_csd)
 

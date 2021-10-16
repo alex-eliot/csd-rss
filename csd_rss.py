@@ -1,8 +1,6 @@
 import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
-import html
-import re
 import json
 import requests
 
@@ -30,7 +28,7 @@ async def get_new_announcements(key: str) -> tuple:
         async with session.get(url, headers=headers) as resp:
             if resp.status == 200:
                 html_content = await resp.read()
-                rss = parse(html_content)
+                feed = parse(html_content)
 
                 feed_saved = requests.get("https://github.com/alex-eliot/csd-rss/raw/master/csd_rss.json")
 
@@ -43,48 +41,17 @@ async def get_new_announcements(key: str) -> tuple:
                     
                 new = []
 
-                for item in rss["feed"]:
-                    if item not in feed_saved:
-                        new.append(item)
-                        feed_saved.append(item)
-
-                updateHistory(get_repo(key), "csd_rss.json", feed_saved)
+                for post in feed:
+                    if post not in feed_saved:
+                        new.append(post)
+                        feed_saved.append(post)
 
     return feed_saved, new
 
-def parseDate(inpt: str) -> str:
-    inpt = inpt.split(", ")[1]
-    slices = inpt.split(" ")
-
-    months = {
-        "Jan": 1,
-        "Feb": 2,
-        "Mar": 3,
-        "Apr": 4,
-        "May": 5,
-        "Jun": 6,
-        "Jul": 7,
-        "Aug": 8,
-        "Sep": 9,
-        "Oct": 10,
-        "Nov": 11,
-        "Dec": 12
-    }
-
-    time_dict = {
-        "DD": slices[0],
-        "Mon": months[slices[1]],
-        "YYYY": slices[2],
-        "TT:TT:TT": slices[3],
-        "+TZXX": slices[4]
-    }
-
-    return "{}-{}-{}T{}".format(time_dict["YYYY"], time_dict["Mon"], time_dict["DD"], time_dict["TT:TT:TT"])
-
-async def parse(inpt: str) -> list:
+def parse(inpt: str) -> list:
     soup = BeautifulSoup(inpt, "html.parser")
 
-    posts = soup.find("article")    
+    posts = soup.find_all("article")
 
     feed = []
 
