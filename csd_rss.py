@@ -11,7 +11,7 @@ from github_operations import updateHistory, get_repo
 global url
 global headers
 
-url = "https://www.csd.auth.gr/category/announcements/feed"
+url = "https://www.csd.auth.gr/category/announcements/"
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36 Edg/94.0.992.47"
 }
@@ -22,7 +22,6 @@ async def initial_setup(key: str) -> None:
             if resp.status == 200:
                 html_content = await resp.read()
                 rss = parse(html_content)
-                print("here")
                 updateHistory(get_repo(key), "csd_rss.json", rss)
 
 
@@ -33,30 +32,25 @@ async def get_new_announcements(key: str) -> tuple:
                 html_content = await resp.read()
                 rss = parse(html_content)
 
-                rss_saved = requests.get("https://github.com/alex-eliot/csd-rss/raw/master/csd_rss.json")
+                feed_saved = requests.get("https://github.com/alex-eliot/csd-rss/raw/master/csd_rss.json")
 
-                if rss_saved.status_code != 200:
+                if feed_saved.status_code != 200:
                     await initial_setup(key)
                     return await get_new_announcements(key)
                 
-                rss_saved = json.loads(rss_saved.text)
+                feed_saved = json.loads(feed_saved.text)
 
-                rss_saved["title"] = rss["title"]
-                rss_saved["link"] = rss["link"]
-                rss_saved["lastUpdate"] = rss["lastUpdate"]
-                rss_saved["favicon"] = rss["favicon"]
-                rss_saved["feed"] = rss["feed"] if "feed" in rss.keys() else []
                     
                 new = []
 
                 for item in rss["feed"]:
-                    if item not in rss_saved["feed"]:
+                    if item not in feed_saved:
                         new.append(item)
-                        rss_saved["feed"].append(item)
+                        feed_saved.append(item)
 
-                updateHistory(get_repo(key), "csd_rss.json", rss_saved)
+                updateHistory(get_repo(key), "csd_rss.json", feed_saved)
 
-    return rss_saved, new
+    return feed_saved, new
 
 def parseDate(inpt: str) -> str:
     inpt = inpt.split(", ")[1]
@@ -87,49 +81,27 @@ def parseDate(inpt: str) -> str:
 
     return "{}-{}-{}T{}".format(time_dict["YYYY"], time_dict["Mon"], time_dict["DD"], time_dict["TT:TT:TT"])
 
-def parse(inpt: str) -> dict:
+async def parse(inpt: str) -> list:
     soup = BeautifulSoup(inpt, "html.parser")
 
-    channel = soup.rss.channel
-    title = channel.title.get_text().replace("&#8211;", "—")
-    main_url = "https://www.csd.auth.gr/announcements/"
-    lastUpdate = parseDate(channel.lastbuilddate.get_text())
-
-    favicon = channel.url.get_text()
-    items = channel.find_all("item")
+    posts = soup.find("article")    
 
     feed = []
 
-    for item in items:
-        item_title = item.title.get_text()
-        item_link = item.comments.get_text().replace("#respond", "")
-        item_pubDate = parseDate(item.pubdate.get_text())
-        creator = item.find("dc:creator").get_text()
-
-        description_raw = item.description.get_text()
-        description_decoded = description_raw
-        for entity in re.findall(r'&#[0-9]{4};', description_raw):
-            description_decoded = description_decoded.replace(entity, html.unescape(entity))
+    for post in posts:
+        post_title = post.find("a").get_text()
+        post_link = post.find("a")["href"]
+        post_pubDate = post.find("div", {"class": "post-date"}).get_text()
         
         feed.append(
             {
-                "title": item_title,
-                "link": item_link,
-                "pubDate": item_pubDate,
-                "creator": creator,
-                "description": description_decoded
+                "title": post_title,
+                "link": post_link,
+                "pubDate": post_pubDate,
             }
         )
 
-    announcements = {
-        "title": title,
-        "link": main_url,
-        "lastUpdate": lastUpdate,
-        "favicon": favicon,
-        "feed": feed
-    }
-
-    return announcements
+    return feed
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()

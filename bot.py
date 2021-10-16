@@ -34,7 +34,7 @@ async def refresh() -> None:
                 }
             }
 
-            channel = client.get_channel(898302925808492584)
+            channel = client.get_channel(854856660932624434)
             await channel.send(embed=discord.Embed.from_dict(embed_dict))
             updateHistory(get_repo(key), "csd_rss.json", default_csd)
 
