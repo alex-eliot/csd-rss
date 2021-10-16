@@ -24,6 +24,8 @@ async def initial_setup(key: str) -> None:
 
 
 async def get_new_announcements(key: str) -> tuple:
+    feed_saved = None
+    new = []
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
         async with session.get(url, headers=headers) as resp:
             if resp.status == 200:
@@ -37,10 +39,7 @@ async def get_new_announcements(key: str) -> tuple:
                     return await get_new_announcements(key)
                 
                 feed_saved = json.loads(feed_saved.text)
-
-                    
-                new = []
-
+                
                 for post in feed:
                     if post not in feed_saved:
                         new.append(post)
