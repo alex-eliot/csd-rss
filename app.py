@@ -16,4 +16,5 @@ def ping():
 def start():
     t1 = threading.Thread(target=bot.start())
     t1.start()
+    t1.join()
     return "<p>Bot initiated.</p>"
