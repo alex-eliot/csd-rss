@@ -41,7 +41,7 @@ async def on_ready() -> None:
     channel = client.get_channel(854856660932624434)
     await channel.send("Process initiated.")
     await refresh()
-    return None
+    await client.close()
 
 @client.event
 async def on_message(message) -> None:

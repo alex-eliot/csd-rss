@@ -14,7 +14,5 @@ def ping():
 
 @app.route("/start", methods=["GET"])
 def start():
-    t1 = threading.Thread(target=bot.start())
-    t1.start()
-    t1.join()
+    bot.start()
     return "<p>Bot initiated.</p>"
