@@ -40,8 +40,9 @@ async def refresh() -> None:
 async def on_ready() -> None:
     channel = client.get_channel(854856660932624434)
     await channel.send("Process initiated.")
-    await refresh()
-    await client.close()
+    while True:
+        await refresh()
+        await asyncio.sleep((1 * 60) * 5) # 5 minutes
 
 @client.event
 async def on_message(message) -> None:
@@ -49,7 +50,7 @@ async def on_message(message) -> None:
         if message.content == "=ping":
             await message.channel.send("Ping back.")
 
-def start():
+def start() -> None:
     with io.open("tokens.json", mode="r", encoding="utf-8") as f:
         global key
         key = os.getenv("key")
@@ -58,10 +59,10 @@ def start():
 
         tokens = json.load(f)
 
-        discord_token_encoded = tokens["discord_token"]
-        discord_token_decoded = "".join(tuple([chr(ord(discord_token_encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(discord_token_encoded))]))
+    discord_token_encoded = tokens["discord_token"]
+    discord_token_decoded = "".join(tuple([chr(ord(discord_token_encoded[i]) ^ ord(key[i % len(key)])) for i in range(len(discord_token_encoded))]))
 
-        client.run(base64.b64decode(discord_token_decoded).decode("utf-8"))
+    client.run(base64.b64decode(discord_token_decoded).decode("utf-8"))
 
 if __name__ == "__main__":
     start()
